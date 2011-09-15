@@ -674,27 +674,37 @@ $.TokenList = function (input, url_or_data, settings) {
                 })
                 .hide();
 
+            var noResults = true;
             $.each(results, function(index, value) {
-                var this_li = settings.resultsFormatter(value);
+                if(!settings.preventDuplicates || !isSelected(value[settings.propertyToSearch])){
 
-                this_li = find_value_and_highlight_term(this_li ,value[settings.propertyToSearch], query);
+                    var this_li = settings.resultsFormatter(value);
 
-                this_li = $(this_li).appendTo(dropdown_ul);
+                    this_li = find_value_and_highlight_term(this_li ,value[settings.propertyToSearch], query);
 
-                if(index % 2) {
-                    this_li.addClass(settings.classes.dropdownItem);
-                } else {
-                    this_li.addClass(settings.classes.dropdownItem2);
+                    this_li = $(this_li).appendTo(dropdown_ul);
+
+                    if(index % 2) {
+                        this_li.addClass(settings.classes.dropdownItem);
+                    } else {
+                        this_li.addClass(settings.classes.dropdownItem2);
+                    }
+
+                    if(noResults) {
+                        select_dropdown_item(this_li);
+                    }
+
+                    noResults = false;
+
+                    $.data(this_li.get(0), "tokeninput", value);
                 }
-
-                if(index === 0) {
-                    select_dropdown_item(this_li);
-                }
-
-                $.data(this_li.get(0), "tokeninput", value);
             });
 
-            show_dropdown();
+            if(noResults){
+                show_no_results();
+            } else {
+                show_dropdown();
+            }
 
             if(settings.animateDropdown) {
                 dropdown_ul.slideDown("fast");
@@ -702,11 +712,26 @@ $.TokenList = function (input, url_or_data, settings) {
                 dropdown_ul.show();
             }
         } else {
-            if(settings.noResultsText) {
-                dropdown.html("<p>"+settings.noResultsText+"</p>");
-                show_dropdown();
-            }
+            show_no_results();
         }
+    }
+
+    function show_no_results() {
+        if(settings.noResultsText) {
+            dropdown.html("<p>"+settings.noResultsText+"</p>");
+            show_dropdown();
+        }
+    }
+
+    //returns true if the value is already selected
+    function isSelected(name) {
+        var itemSelected = false;
+        $.each(saved_tokens, function(saved_index, saved_value){
+            if(saved_value[settings.propertyToSearch] == name){
+                return itemSelected = true;
+            }
+        });
+        return itemSelected;
     }
 
     // Highlight an item in the results dropdown
