@@ -644,8 +644,10 @@ $.TokenList = function (input, url_or_data, settings) {
             }
         }
 
-        // Squeeze input_box so we force no unnecessary line break
-        input_box.width(0);
+        if($(input).data("settings").autoResizeInput === true) {
+            // Squeeze input_box so we force no unnecessary line break
+            input_box.width(0);
+        }
         // Insert the new tokens
         if($(input).data("settings").tokenLimit == null || token_count < $(input).data("settings").tokenLimit) {
             insert_token(item);
